@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+// Function to compress a text file using Run-Length Encoding 
+void compressFile(FILE* inputFile, FILE* outputFile) {
+    int currentChar, previousChar;
+    int count = 1;
+
+    previousChar = fgetc(inputFile);
+    if (previousChar == EOF) {
+        return;
+    }
+
+    while ((currentChar = fgetc(inputFile)) != EOF) {
+        if (currentChar == previousChar) {
+            count++;
+        } else {
+            fprintf(outputFile, "%d%c", count, previousChar);
+            previousChar = currentChar;
+            count = 1;
+        }
+    }
+    fprintf(outputFile, "%d%c", count, previousChar);
+}
+
+// Function to decompress a text file using Run-Length Encoding
+void decompressFile(FILE* inputFile, FILE* outputFile) {
+    int count;
+    char character;
+
+    while (fscanf(inputFile, "%d%c", &count, &character) != EOF) {
+        for (int i = 0; i < count; i++) {
+            fputc(character, outputFile);
+        }
+    }
+}
+
+// Function to open a file and check for errors
+FILE* openFile(const char* filename, const char* mode) {
+    FILE* file = fopen(filename, mode);
+    if (file == NULL) {
+        perror("File opening failed");
+        exit(EXIT_FAILURE);
+    }
+    return file;
+}
+
+int main() {
+    char inputFilename[100], outputFilename[100];
+    int choice;
+
+    printf("Enter the name of the input file: ");
+    scanf("%s", inputFilename);
+
+    printf("Enter the name of the output file: ");
+    scanf("%s", outputFilename);
+
+    // Ask user for the choice of operation
+    printf("Choose an operation:\n");
+    printf("1. Compress\n");
+    printf("2. Decompress\n");
+    printf("Enter choice (1 or 2): ");
+    scanf("%d", &choice);
+
+    FILE* inputFile = openFile(inputFilename, "r");
+    FILE* outputFile = openFile(outputFilename, "w");
+
+    if (choice == 1) {
+        compressFile(inputFile, outputFile);
+        printf("File compressed successfully!\n");
+    } else if (choice == 2) {
+        decompressFile(inputFile, outputFile);
+        printf("File decompressed successfully!\n");
+    } else {
+        printf("Invalid choice!\n");
+    }
+
+    fclose(inputFile);
+    fclose(outputFile);
+
+    return 0;
+}
